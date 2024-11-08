@@ -1,16 +1,32 @@
 const mysql = require('mysql2');
 
-const db = mysql.createConnection({
-    host: '127.0.0.1',
-    port: '3306',
-    user: 'admin',
-    password: 'password',
-    database: 'kshop'
-});
+const dbConfig = {
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'admin',
+    password: process.env.DB_PASSWORD || 'password',
+    database: process.env.DB_NAME || 'kshop',
+};
 
-db.connect((err) => {
-    if (err) throw err;
-    console.log('Connected to MySQL database');
-});
+function connectWithRetry() {
+    const db = mysql.createConnection(dbConfig);
 
-module.exports = db;
+    db.connect((err) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            setTimeout(connectWithRetry, 5000);
+        } else {
+            console.log('Connected to the database');
+        }
+    });
+
+    db.on('error', (err) => {
+        console.error('Database error:', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            connectWithRetry();
+        }
+    });
+
+    module.exports = db;
+}
+
+connectWithRetry();
