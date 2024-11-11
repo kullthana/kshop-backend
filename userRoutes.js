@@ -35,4 +35,31 @@ router.post('/login', (req, res) => {
     });
 });
 
+// Get all users (for admin or authorized personnel)
+router.get('/', (req, res) => {
+    const getAllUsersQuery = 'SELECT id, username, email, firstname, lastname FROM users';
+    
+    db.query(getAllUsersQuery, (err, results) => {
+        if (err) return res.status(500).json({ message: 'Error fetching users' });
+        
+        res.json({ users: results });
+    });
+});
+
+// Delete a user by ID (for admin or authorized personnel)
+router.delete('/:id', (req, res) => {
+    const userId = req.params.id;
+    
+    const deleteUserQuery = 'DELETE FROM users WHERE id = ?';
+    db.query(deleteUserQuery, [userId], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Error deleting user' });
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        res.json({ message: 'User deleted successfully' });
+    });
+});
+
 module.exports = router;
