@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
-const { generateToken } = require('./jwtUtils');
+const { generateToken,verifyToken } = require('./jwtUtils');
 
 const router = express.Router();
 
@@ -35,9 +35,9 @@ router.post('/login', (req, res) => {
     });
 });
 
-// Get all users (for admin or authorized personnel)
+// Get all users
 router.get('/', (req, res) => {
-    const getAllUsersQuery = 'SELECT id, username, email, firstname, lastname FROM users';
+    const getAllUsersQuery = 'SELECT id, username, email, first_name, last_name FROM users';
     
     db.query(getAllUsersQuery, (err, results) => {
         if (err) return res.status(500).json({ message: 'Error fetching users' });
@@ -46,7 +46,7 @@ router.get('/', (req, res) => {
     });
 });
 
-// Delete a user by ID (for admin or authorized personnel)
+// Delete a user by ID
 router.delete('/:id', (req, res) => {
     const userId = req.params.id;
     
