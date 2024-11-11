@@ -37,4 +37,20 @@ router.put('/:id', verifyToken, (req, res) => {
     });
 });
 
+// Delete a product by ID
+router.delete('/:id', verifyToken, (req, res) => {
+    const productId = req.params.id;
+
+    const deleteQuery = 'DELETE FROM products WHERE id = ?';
+    db.query(deleteQuery, [productId], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Error deleting product' });
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        res.json({ message: 'Product deleted successfully' });
+    });
+});
+
 module.exports = router;
